@@ -18,7 +18,6 @@ const faceOval = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397
 function setup() {
   createCanvas(windowWidth, windowHeight);
   capture = createCapture(VIDEO);
-  capture.size(640, 480); // 設定擷取解析度以確保運算穩定
   capture.hide(); // 隱藏預設產生的 HTML 影片元件
 
   // 初始化 ml5 FaceMesh
@@ -32,7 +31,12 @@ function setup() {
     faces = results;
   });
 
-  // 初始化 100 顆星星的座標 (相對於影像寬高)
+  generateStars();
+}
+
+// 產生星星的函式
+function generateStars() {
+  stars = [];
   for (let i = 0; i < 100; i++) {
     stars.push({ x: random(1), y: random(1), size: random(1, 3) });
   }
@@ -40,6 +44,9 @@ function setup() {
 
 function draw() {
   background('#e7c6ff');
+
+  // 確保攝影機已載入解析度
+  if (capture.width === 0) return;
 
   let w = width * 0.5;
   let h = height * 0.5;
@@ -129,4 +136,5 @@ function drawClosedLoop(keypoints, indices, sx, sy) {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+  generateStars(); // 視窗大小改變（旋轉）時重新產生星星
 }
