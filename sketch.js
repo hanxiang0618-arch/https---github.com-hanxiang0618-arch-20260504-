@@ -1,6 +1,8 @@
 let capture;
 let faceMesh;
 let faces = [];
+let isModelLoaded = false;
+
 // 指定要串接的點位編號
 const lipIndices = [409, 270, 269, 267, 0, 37, 39, 40, 185, 61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291];
 
@@ -13,6 +15,7 @@ function setup() {
   // 初始化 ml5 FaceMesh
   faceMesh = ml5.faceMesh(capture, () => {
     console.log("FaceMesh Model Loaded");
+    isModelLoaded = true;
   });
 
   // 開始偵測臉部
@@ -35,24 +38,39 @@ function draw() {
   scale(-1, 1);
   image(capture, 0, 0, w, h);
 
-  // 如果有偵測到臉部，則繪製指定編號的連線
-  if (faces.length > 0 && capture.width > 0) {
+  // 檢查是否有偵測到臉部資料
+  if (faces.length > 0 && faces[0].keypoints) {
     let sx = w / capture.width;
     let sy = h / capture.height;
 
-    stroke(255, 0, 0); // 設定線條為紅色
-    strokeWeight(15);  // 設定粗細為 15
+    stroke(255, 0, 0);       // 設定線條為紅色
+    strokeWeight(15);        // 設定粗細為 15
+    strokeJoin(ROUND);       // 使線條轉折處較圓滑
     noFill();
 
+    // 開始繪製線段
     for (let i = 0; i < lipIndices.length - 1; i++) {
-      let p1 = faces[0].keypoints[lipIndices[i]];
-      let p2 = faces[0].keypoints[lipIndices[i + 1]];
+      let idx1 = lipIndices[i];
+      let idx2 = lipIndices[i + 1];
+
+      let p1 = faces[0].keypoints[idx1];
+      let p2 = faces[0].keypoints[idx2];
+
+      // 確保點位存在才繪製
       if (p1 && p2) {
         line(p1.x * sx, p1.y * sy, p2.x * sx, p2.y * sy);
       }
     }
   }
   pop();
+
+  // 如果模型還沒載入，在畫面上顯示提示字樣
+  if (!isModelLoaded) {
+    fill(0);
+    noStroke();
+    textAlign(CENTER, CENTER);
+    text("FaceMesh 模型載入中...", width / 2, height / 2 + h / 2 + 30);
+  }
 }
 
 function windowResized() {
