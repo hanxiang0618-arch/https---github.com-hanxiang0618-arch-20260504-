@@ -3,8 +3,10 @@ let faceMesh;
 let faces = [];
 let isModelLoaded = false;
 
-// 指定要串接的點位編號
-const lipIndices = [76, 77, 90, 180, 85, 16, 315, 404, 320, 307, 306, 408, 304, 303, 302, 11, 72, 73, 74, 184];
+// 定義右眼的兩組點位編號
+const rightEyeOuter = [130, 247, 30, 29, 27, 28, 56, 190, 243, 112, 26, 22, 23, 24, 110, 25]; // 包含 247 的外圈
+const rightEyeInner = [33, 246, 161, 160, 159, 158, 157, 173, 133, 155, 154, 153, 145, 144, 163, 7]; // 包含 246 的內圈
+
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -48,19 +50,11 @@ function draw() {
     strokeJoin(ROUND);       // 使線條轉折處較圓滑
     noFill();
 
-    // 開始繪製線段
-    for (let i = 0; i < lipIndices.length - 1; i++) {
-      let idx1 = lipIndices[i];
-      let idx2 = lipIndices[i + 1];
-
-      let p1 = faces[0].keypoints[idx1];
-      let p2 = faces[0].keypoints[idx2];
-
-      // 確保點位存在才繪製
-      if (p1 && p2) {
-        line(p1.x * sx, p1.y * sy, p2.x * sx, p2.y * sy);
-      }
-    }
+    // 繪製右眼外圈 (包含 247)
+    drawClosedLoop(faces[0].keypoints, rightEyeOuter, sx, sy);
+    
+    // 繪製右眼內圈 (包含 246)
+    drawClosedLoop(faces[0].keypoints, rightEyeInner, sx, sy);
   }
   pop();
 
@@ -70,6 +64,18 @@ function draw() {
     noStroke();
     textAlign(CENTER, CENTER);
     text("FaceMesh 模型載入中...", width / 2, height / 2 + h / 2 + 30);
+  }
+}
+
+// 輔助函式：繪製封閉的線圈
+function drawClosedLoop(keypoints, indices, sx, sy) {
+  for (let i = 0; i < indices.length; i++) {
+    let p1 = keypoints[indices[i]];
+    let p2 = keypoints[indices[(i + 1) % indices.length]]; // 使用取餘數來連回第一個點
+
+    if (p1 && p2) {
+      line(p1.x * sx, p1.y * sy, p2.x * sx, p2.y * sy);
+    }
   }
 }
 
